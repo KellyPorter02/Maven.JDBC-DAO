@@ -21,11 +21,10 @@ public class CarCRUD implements CarDAO {
     }
 
 
-    public Car findById(int id) throws SQLException {  // make it return whatever i want a string to test
-        System.out.println("Creating statement: Find Car By ID");
-        String findByIDQuery = "SELECT * FROM jdbc_lab.cars WHERE id IS ?";
+    public Car findById(int id) throws SQLException {
+        System.out.println("Find Car By ID");
+        String findByIDQuery = "SELECT * FROM jdbc_lab.cars WHERE id = " + id;
         try {
-            preparedStatement.setInt(1, id);
             preparedStatement = connect.prepareStatement(findByIDQuery);
             resultSet = preparedStatement.executeQuery(findByIDQuery);
             // Extract data from result set
@@ -33,6 +32,7 @@ public class CarCRUD implements CarDAO {
                 // Retrieve by column name (taken care of in this helper method)
                 car = extractCarFromResultSet(resultSet);
                 //Display values
+                System.out.println("Car ID:  " + id);
                 System.out.print(car.toString());
             }
         } catch (SQLException throwable) {
@@ -80,20 +80,15 @@ public class CarCRUD implements CarDAO {
             preparedStatement.setString(4, car.getColor());
             preparedStatement.setInt(5, car.getVin());
             numRowsChanged = preparedStatement.executeUpdate();
-            // Extract data from result set
-            while (resultSet.next()) {
-                // Retrieve by column name
-                this.car = extractCarFromResultSet(resultSet);
-                //Display values
-                resultOfInsert = this.car.toString();
-                System.out.print(resultOfInsert);
-            }
+                if (numRowsChanged == 1) {
+                    resultOfInsert = car.toString();
+                    System.out.print(resultOfInsert);
+                }
         } catch (SQLException throwable) {
             throwable.printStackTrace();
             resultOfInsert = "Attempt to insert new car entry into table failed";
             System.out.println(resultOfInsert);
         }
-        resultSet.close();
         return resultOfInsert;
     }
 
@@ -110,7 +105,7 @@ public class CarCRUD implements CarDAO {
             ps.setString(4, car.getColor());
             ps.setInt(5, car.getVin());
             ps.setInt(6, car.getId());
-            numOfRowsUpdated = preparedStatement.executeUpdate();
+            numOfRowsUpdated = ps.executeUpdate();
             changedRowString = findById(car.getId()).toString();
             System.out.println("Initial Car value:  " + initialRowString + "\nUpdated Car value:  " + changedRowString);
         } catch (SQLException throwable) {
@@ -122,21 +117,24 @@ public class CarCRUD implements CarDAO {
     }
 
     public String deleteCar (int id) throws SQLException {
-        String deleteCarUpdate = "DELETE FROM jdbc_lab.cars WHERE id = ?";
-        String initialRowString = findById(id).toString();
+        String deleteCarUpdate = "DELETE FROM jdbc_lab.cars WHERE id =" +id;
+//        String initialRowString = findById(id).toString();
         String deleteResult = "";
         int numOfRowsUpdated = 0;
         try {
-            preparedStatement.clearParameters();
             preparedStatement = connect.prepareStatement(deleteCarUpdate, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-            preparedStatement.setInt(1, id);
+//            preparedStatement.setInt(1, id);
             numOfRowsUpdated = preparedStatement.executeUpdate();
-            deleteResult = "Car has been deleted from table:  " + initialRowString;
+                if (numOfRowsUpdated == 1) {
+                    deleteResult = "Car has been deleted from table ";
+                } else {
+                    deleteResult = "Attempt to delete Car entry from table unsuccessful";
+                }
         } catch (SQLException throwable) {
             throwable.printStackTrace();
             deleteResult = "Attempt to delete Car entry from table unsuccessful";
         }
-        resultSet.close();
+//        resultSet.close();
         return deleteResult;
     }
 
@@ -159,5 +157,12 @@ public class CarCRUD implements CarDAO {
         return result;
     }
 
+    public Car getCar() {
+        return this.car;
+    }
+
+    public Connection getConnect() {
+        return this.connect;
+    }
 
 }

@@ -4,7 +4,7 @@ import java.sql.*;
 
 public class MySQLConnection {
 
-    public static final String URL = "jdbc:mysql://localhost:3306/jdbc_lab";
+    public static final String URL = "jdbc:mysql://localhost:3306/jdbc_lab?useSSL=false";
     public static final String USER = "testUser";
     public static final String PASS = "testpassword";
     private Connection connection = null;
